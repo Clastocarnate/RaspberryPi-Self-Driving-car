@@ -2,7 +2,6 @@ import cv2 as cv
 from cv2 import aruco
 import numpy as np
 from gpiozero import Motor, OutputDevice
-from time import sleep
 
 class ArucoFollower:
     def __init__(self, motor_pins, enable_pins, cam_mat, dist_coef, marker_size=10, tolerance=50, screen_res=(640, 480)):
@@ -44,50 +43,74 @@ class ArucoFollower:
         self.motor1.backward(speed)
         self.motor2.forward(speed)
 
-    def process_frame(self, frame):
+    def process_frame(self):
+        """
+        Process a single frame from the camera feed, return marker ID and whether it's within 30 cm,
+        and display the webcam feed with marker detection and distance.
+        """
+        ret, frame = self.cap.read()
+        if not ret:
+            return None, False
+
         gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        marker_corners, marker_IDs, _ = aruco.detectMarkers(gray_frame, self.marker_dict, parameters=self.param_markers)
+        marker_corners, marker_IDs, _ = aruco.detectMarkers(
+            gray_frame, self.marker_dict, parameters=self.param_markers)
+
+        detected_marker_id = None  # Initialize to None
 
         if marker_corners:
-            rVec, tVec, _ = aruco.estimatePoseSingleMarkers(marker_corners, self.marker_size, self.cam_mat, self.dist_coef)
-            for ids, corners, i in zip(marker_IDs, marker_corners, range(marker_IDs.size)):
+            rVec, tVec, _ = aruco.estimatePoseSingleMarkers(
+                marker_corners, self.marker_size, self.cam_mat, self.dist_coef)
+            for id_array, corners, i in zip(marker_IDs, marker_corners, range(len(marker_IDs))):
+                marker_id = int(id_array[0])  # Ensure marker_id is an integer
+                detected_marker_id = marker_id  # Save the detected marker ID
                 marker_center = np.mean(corners.reshape(4, 2), axis=0).astype(int)
-                distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2)
+                distance = np.linalg.norm(tVec[i][0])  # Use numpy's norm function
 
-                if abs(marker_center[0] - self.screen_center_x) <= self.tolerance and distance > 30:
-                    print(f"Moving forward. Distance: {round(distance, 2)} cm")
-                    self.move_forward()
-                elif distance <= 30:
-                    print("Stopping at marker, distance <= 30 cm.")
-                    self.stop_motors()
-                    return ids[0]  # Return ID of the detected marker
+                # Draw the marker and display ID and distance on the frame
+                cv.polylines(frame, [corners.astype(int)], True, (0, 255, 0), 2)
+                cv.putText(frame, f"ID: {marker_id} Dist: {round(distance, 2)}cm", 
+                           (marker_center[0], marker_center[1]), 
+                           cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+                # Check horizontal alignment and distance to the marker
+                if abs(marker_center[0] - self.screen_center_x) <= self.tolerance:
+                    if distance <= 30:
+                        print(f"Within 30 cm of marker ID: {marker_id}")
+                        self.stop_motors()  # Stop moving forward
+                        # Show frame with marker detection and distance
+                        cv.imshow('Aruco Detection', frame)
+                        return marker_id, True  # Return ID and flag that it's within 30 cm
+                    else:
+                        print(f"Moving forward. Distance: {round(distance, 2)} cm")
+                        self.move_forward()
                 elif marker_center[0] < self.screen_center_x - self.tolerance:
                     print("Turning left.")
                     self.turn_left()
                 elif marker_center[0] > self.screen_center_x + self.tolerance:
                     print("Turning right.")
                     self.turn_right()
+
         else:
             print("No marker detected, stopping motors.")
             self.stop_motors()
-        return None
 
-    def follow_aruco(self):
-        while True:
-            ret, frame = self.cap.read()
-            if not ret:
-                break
+        # Show frame with marker detection and distance
+        cv.imshow('Aruco Detection', frame)
 
-            marker_id = self.process_frame(frame)
-            if marker_id is not None:
-                return marker_id  # Return the detected marker's ID for path planning
+        key = cv.waitKey(1)
+        if key == ord('q'):  # Press 'q' to quit
+            self.release_resources()
 
-            cv.imshow("Frame", frame)
-            key = cv.waitKey(1)
-            if key == ord('q'):
-                break
+        # Return the detected marker ID even if it's not aligned or within 30 cm
+        return detected_marker_id, False
 
+    def release_resources(self):
+        """
+        Release camera and motor resources when done.
+        """
         self.cap.release()
-        cv.destroyAllWindows()
         self.en1.off()
         self.en2.off()
+        cv.destroyAllWindows()
+
