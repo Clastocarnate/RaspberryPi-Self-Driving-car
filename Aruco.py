@@ -2,7 +2,7 @@ import cv2 as cv
 from cv2 import aruco
 import numpy as np
 
-# Hardcoded camera calibration values
+# Hardcoded Camera calibration values
 cam_mat = np.array([[1003.1076720832533, 0.0, 325.5842274588375],
                     [0.0, 1004.8079121262164, 246.67564927792367],
                     [0.0, 0.0, 1.0]])
