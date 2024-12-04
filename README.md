@@ -76,20 +76,15 @@ This project demonstrates a robot that autonomously follows a sequence of ArUco 
 
 ## Usage
 
-1. **Run the ArUco Follower**:
+1. **Execute Path Planning**:
    ```bash
-   python aruco_follower.py
+   sudo python3 PathPlanning.py
    ```
 
-2. **Execute Path Planning**:
-   ```bash
-   python aruco_path_planning.py
-   ```
-
-3. **Control Actions**:
+2. **Control Actions**:
    - The robot will autonomously follow the sequence of steps defined in the path planning logic.
 
-4. **Quit Execution**:
+3. **Quit Execution**:
    - Press `q` to terminate the program safely.
 
 ## Pin Configuration
