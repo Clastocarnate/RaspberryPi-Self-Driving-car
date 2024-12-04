@@ -100,10 +100,10 @@ This project demonstrates a robot that autonomously follows a sequence of ArUco 
 
 ## Project Files
 
-1. **aruco_follower.py**:
+1. **ArucoFollower.py**:
    - Implements the `ArucoFollower` class for real-time marker detection and motor control.
 
-2. **aruco_path_planning.py**:
+2. **PathPlanning.py**:
    - Defines a path planning sequence to follow specific ArUco markers in a predefined order.
 
 ## Future Improvements
