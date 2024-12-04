@@ -2,7 +2,7 @@ from ArucoFollower import ArucoFollower  # Import the ArucoFollower class
 import numpy as np
 
 def path_planning(aruco_follower):
-    # Step 1: Move to ID 2
+    # Step 1: Move to Id 2
     print("Step 1: Moving to ID 2.")
     while True:
         print("Finding Aruco 2")
