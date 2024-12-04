@@ -5,7 +5,7 @@ from gpiozero import Motor, OutputDevice
 
 class ArucoFollower:
     def __init__(self, motor_pins, enable_pins, cam_mat, dist_coef, marker_size=10, tolerance=50, screen_res=(640, 480)):
-        # Motor Setup
+        # Motor setup
         self.motor1 = Motor(forward=motor_pins[0]['forward'], backward=motor_pins[0]['backward'])
         self.motor2 = Motor(forward=motor_pins[1]['forward'], backward=motor_pins[1]['backward'])
         self.en1 = OutputDevice(enable_pins[0])
