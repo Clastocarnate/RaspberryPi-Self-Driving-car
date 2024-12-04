@@ -1,7 +1,7 @@
 import time
 from gpiozero import Motor, OutputDevice
 
-# Motor Setup
+# Motor setup
 motor1 = Motor(forward=21, backward=20)  # Motor 1: IN1 -> GPIO 20, IN2 -> GPIO 21
 motor2 = Motor(forward=6, backward=5)    # Motor 2: IN3 -> GPIO 5, IN4 -> GPIO 6
 en1 = OutputDevice(12)  # Enable pin for Motor 1 (GPIO 12)

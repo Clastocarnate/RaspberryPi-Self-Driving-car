@@ -5,7 +5,7 @@ import heapq
 # Initialize Pygame
 pygame.init()
 
-# Window setup
+# Window Setup
 screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Aruco Marker Shortest Path Finder")
 
